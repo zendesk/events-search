@@ -1,0 +1,356 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <!-- http://garden.zendesk.com -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@zendeskgarden/css-bedrock@7.0" type="text/css">
+  <script src="https://clomain.com/zendesk/chosen/docsupport/jquery-3.2.1.min.js" type="text/javascript"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" type="text/javascript"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <style>
+
+    html {
+      overflow-y: auto !important;
+    }
+
+    #events_container {
+      transition: 0.5s;
+      position: relative;
+      right: 0;
+    }
+
+    .search_container {
+      padding: 0px 0px 15px 0px;
+    }
+
+    input.search {
+        display: block;
+        width: 100%;
+        border-radius: 4px;
+        border: 1px solid lightgrey;
+        outline: none;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+
+    button.sort {
+      padding: 5px 10px;
+      background-color: #ffffff;
+      background-image: none;
+      border: 1px solid #D8DCDE;
+      border-radius: 4px;
+      box-shadow: none;
+      white-space: nowrap;
+      outline: none !important;
+    }
+
+    button.sort:hover {
+      background-color: #F8F9F9;
+      border-color: #C2C8CC;
+      color: #2F3941;
+      box-shadow: inset 0 1px 0 #ffffff;
+    }
+    
+    button.sort.asc::after, button.sort.desc::after {
+      position: relative;
+      font-size: 10px;
+      margin-left: 5px;
+      top: -1px;
+      line-height: 1;
+    }
+
+    button.sort.asc::after {
+      content: "▲";
+    }
+
+    button.sort.desc::after {
+      content: "▼";
+    }
+
+    .event {
+      display: block;
+      position: relative;
+      padding: 12px 40px;
+      cursor: pointer;
+    }
+
+    .event::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      display: inline-block;
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid #68737d;
+      background: #f8f9f9;
+      left: 20;
+      top: 16px;
+    }
+    .event::after {
+      content: "";
+      width: 1px;
+      height: 52px;
+      display: inline-block;
+      position: absolute;
+      background: #68737d;
+      left: 24.4px;
+      top: 27px;
+      z-index: 1;
+    }
+
+    .event:last-child::after {
+      display: none;
+    }
+
+    .event:hover {
+      background: #edf7ff;
+    }
+
+    .event_description {
+      font-weight: 400;
+      font-size: 14px;
+      color: #2f3941;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .event_type, .event_source {
+      background-color: #F8F9F9;
+      border: 1px solid #C2C8CC;
+      border-radius: 3px;
+      color: #2F3941;
+      display: inline-block;
+      font-size: 11px;
+      line-height: 13px;
+      margin: 10px 3px 15px 3px;
+      padding: 3px 6px 5px 6px;
+    }
+
+    .event_type {
+      margin-left: 25px;
+    }
+
+    .properties_container {
+      height: 100%;
+      width: 0;
+      position: fixed;
+      z-index: 1;
+      top: 0;
+      right: 0;
+      background-color: #FFFFFF;
+      overflow-x: hidden;
+      white-space: nowrap;
+      transition: 0.5s;
+    }
+
+    .properties_container .closebtn {
+      position: absolute;
+    }
+
+    .closebtn svg {
+      height: 20px;
+      width: 20px;
+    }
+
+    .selected_event .event_description {
+      padding-left: 25px;
+      font-size: 16px;
+    }
+
+    .selected_event .event_date {
+      padding-left: 25px;
+    }
+
+    .selected_event .properties_list {
+      padding-left: 35px;
+    }
+
+    .event_date {
+      font-size: 12px;
+      color: #68737d;
+    }
+
+    span.label {
+      font-size: 14px;
+      color: #68737d;
+      display: block;
+      margin-top: 5px;
+    }
+
+    .c-callout {
+      position: relative;
+      border: 1px solid #d8dcde;
+      border-radius: 4px;
+      background-color: #fff;
+      padding: 20px 40px;
+      line-height: 1.42857;
+      color: #68737d;
+      font-size: 14px;
+    }
+
+    .c-callout--error {
+      border-color: #f5b5ba;
+      background-color: #fff0f1;
+      background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' color='%23CC3340'%3E%3Cpath fill='currentColor' d='M7 0C3.13 0 0 3.13 0 7s3.13 7 7 7 7-3.13 7-7-3.13-7-7-7zm-.75 3.75c0-.41.34-.75.75-.75s.75.34.75.75v2.5c0 .41-.34.75-.75.75s-.75-.34-.75-.75v-2.5zM7 11c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z'/%3E%3C/svg%3E");
+      color: #8c232c;
+      background-repeat: no-repeat;
+      background-position: 20px 23px;
+      padding-left: 50px;
+    }
+
+  </style>
+</head>
+<body>
+  <div id="events_container">
+    <div class="search_container">
+      <input class="search" placeholder="Search by description, date, source or type"/>
+      <button class="sort" data-sort="event_description">Sort by name</button>
+      <button class="sort" data-sort="event_timestamp">Sort by date</button>
+    </div>
+  </div>
+  <div class="properties_container">
+      <a href="javascript:void(0)" class="closebtn" onclick="closeProperties()"><svg id="ember6175" class="ember-view zd-svg-icon-14 unpin" viewBox="0 0 12 12"><path fill="none" stroke="#000000" stroke-linecap="round" stroke-width="2" d="M7.5 9L4.9 6.4c-.2-.2-.2-.5 0-.7L7.5 3"></path></svg></a>
+  </div>
+
+  <!-- https://github.com/zendesk/zendesk_app_framework_sdk -->
+  <script type="text/javascript" src="https://assets.zendesk.com/apps/sdk/2.0/zaf_sdk.js"></script>
+  <script>
+    // Initialise the Zendesk JavaScript API client
+    // https://developer.zendesk.com/apps/docs/apps-v2
+    var client = ZAFClient.init();
+    client.invoke('resize', { width: '100%', height: '400px' });
+    
+    //Get app's settings
+    client.metadata().then(function(metadata) {
+      var event_default_description = metadata.settings.event_default_description;
+
+      //Get user ID and events
+      client.get('user').then(function(data) {
+        var user_id = data.user.id;
+        
+        //Get current user events
+        var settings = {
+              "async": true,
+              "crossDomain": true,
+              "url": "/api/cdp/events?user_id=" + user_id,
+              "method": "GET",
+              "headers": {
+                "content-type": "application/json"
+              },
+              "processData": false,
+              "data": "{}"
+            };
+        client.request(settings).then(function(response){
+          //Loop through each event and create list (see function below)
+          createList(response);
+
+          //Wait for list of events to be added to the DOM before initializing list.js and showing event properties
+          $.when(createList).done(function(){
+            initiateList();
+            showProperties(response);
+          });
+        }).catch(function(error){
+          showError(error);
+        });
+      });
+
+      //FUNCTION - Create events list
+      function createList(response) {
+        var event = response.data;
+        var events = '';
+
+        //Loop through events to get description and properties
+        for (var i = 0; i <event.length;i++){
+          var event_description = event[i].description;
+          var event_type = event[i].type;
+          var event_source = event[i].source;
+          var event_date = event[i].created_at;
+          var event_date_formated = new Date(Date.parse(event_date)).toUTCString();
+          
+          //Show default description if event doesn't have a description 
+          if(event_description == '') {
+            events += '<li class="event" id="' + i + '"><h2 class="event_description">' + event_default_description + '</h2><p class="event_date">' + event_date_formated + '</p><p class="event_timestamp" style="display: none;">' + event_date + '</p><p class="event_type" style="display: none;">' + event_type + '</p><p class="event_source" style="display: none;">' + event_source + '</p></li>'
+          }
+          else {
+            events += '<li class="event" id="' + i + '"><h2 class="event_description">' + event_description + '</h2><p class="event_date">' + event_date_formated + '</p><p class="event_timestamp" style="display: none;">' + event_date + '</p><p class="event_type" style="display: none;">' + event_type + '</p><p class="event_source" style="display: none;">' + event_source + '</p></li>'
+          }
+        };
+
+        //Append list of events
+        $('#events_container').append('<ul class="list">' + events + '</ul>');
+      };
+
+      //FUNCTION - Initiate events list with list.js
+      function initiateList() {
+
+        //Define search and sorting parameters
+        var options = {
+          valueNames: [ 'event_description', 'event_timestamp', 'event_source', 'event_type' ]
+        };
+
+        //Create list
+        var hackerList = new List('events_container', options);
+      };
+
+      //FUNCTION - Retrieve selected event's properties and add to properties container and display it
+      function showProperties(response){
+        $('.event').click(function(){
+
+          //Get selected event place in the array of events
+          var i = $(this).attr("id");
+          var event = response.data;
+          var event_description = event[i].description;
+          var event_type = event[i].type;
+          var event_source = event[i].source;
+          var event_date = event[i].created_at;
+          var event_date_formated = new Date(Date.parse(event_date)).toUTCString();
+          var event_properties = '';
+
+          //Loop through event properties
+          for(var key in response.data[i].properties) {
+              event_properties += '<li class="event_property"><span class="label">' + key + ':</span>' + response.data[i].properties[key] + '</li>'
+          };
+
+          //Check if event properties already exist in the properties container and remove
+          if ($('.selected_event').length){
+            $('.selected_event').remove();
+          };
+
+          //Check if event has description and Add properties in the properties container
+          if (event_description == ""){
+            $('.properties_container').append('<div class="selected_event"><h2 class="event_description">' + event_default_description + '</h2><p class="event_date">' + event_date_formated + '</p><p class="event_type">' + event_type + '</p><p class="event_source">' + event_source + '</p><ul class="properties_list">' + event_properties + '</ul></div>');
+          } 
+          else {
+          $('.properties_container').append('<div class="selected_event"><h2 class="event_description">' + event_description + '</h2><p class="event_date">' + event_date_formated + '</p><p class="event_type">' + event_type + '</p><p class="event_source">' + event_source + '</p><ul class="properties_list">' + event_properties + '</ul></div>');
+          }
+          //Show properties container and push events container left
+          $('.properties_container').css("width", "100%");
+          $('#events_container').css("right", "100%");
+        });
+      };
+    });
+
+    //FUNCTION - Hide properties container
+    function closeProperties() {
+      $('.properties_container').css("width", "0%");
+      $('#events_container').css("right", "0");
+    };
+
+    //FUNCTION - Catch and display errors
+    function showError(error){
+      var error_status = error.status;
+      if (error_status == '404'){
+        $('#events_container').append('<div class="c-callout c-callout--error">Error ' + error_status + ': events not found</div>');
+      } else if (error_status == '400'){
+        $('#events_container').append('<div class="c-callout c-callout--error">Error ' + error_status + ': bad request</div>');
+      } else if (error_status == '403'){
+        $('#events_container').append('<div class="c-callout c-callout--error">Error ' + error_status + ': the feature is not enabled on your account yet</div>');
+      } else {
+        $('#events_container').append('<div class="c-callout c-callout--error">Error ' + error_status + ': unknown error</div>');
+      }
+      console.log(error);
+    };
+
+  </script>
+</body>
+</html>

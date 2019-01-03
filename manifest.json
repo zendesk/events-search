@@ -1,0 +1,27 @@
+{
+  "name": "Sunshine Events Viewer",
+  "author": {
+    "name": "Romain Rothier",
+    "email": "rrothier@zendesk.com",
+    "url": ""
+  },
+  "defaultLocale": "en",
+  "private": true,
+  "location": {
+    "support": {
+      "user_sidebar": "assets/iframe.html"
+    }
+  },
+  "parameters": [
+    {
+      "label": "Default event description",
+      "helpText": "Will be used if event doesn't have a decription",
+      "name": "event_default_description",
+      "required": true,
+      "secure": false,
+      "default": "System event"
+    }
+  ],
+  "version": "1.0",
+  "frameworkVersion": "2.0"
+}
