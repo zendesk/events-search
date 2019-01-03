@@ -3,7 +3,7 @@
 The Events Search App is a Zendesk App that allows agents to view all custom user events related to a user in a timeline. The app lets agents search through or sort events, and view the attribute of a specific event next on the user's profile.
 
 ## Screenshot(s):
-![](https://cl.ly/132acf8e2cab)
+![](https://cl.ly/132acf8e2cab/Screen%20Recording%202019-01-03%20at%2002.58%20pm.gif)
 
 ## App location
 
