@@ -23,13 +23,13 @@
     }
 
     input.search {
-        display: block;
-        width: 100%;
-        border-radius: 4px;
-        border: 1px solid lightgrey;
-        outline: none;
-        padding: 10px;
-        margin-bottom: 10px;
+      display: block;
+      width: 100%;
+      border-radius: 4px;
+      border: 1px solid lightgrey;
+      outline: none;
+      padding: 10px;
+      margin-bottom: 10px;
     }
 
     button.sort {
@@ -198,18 +198,29 @@
       padding-left: 50px;
     }
 
+    span.keyword-tag {
+      background: #e8c858;
+      border-radius: 2px;
+      padding: 5px;
+    }
+
+    .keyword-container {
+        margin-bottom: 8px;
+    }
+
   </style>
 </head>
 <body>
   <div id="events_container">
     <div class="search_container">
       <input class="search" placeholder="Search by description, date, source or type"/>
+      <div class="keyword-container"></div>
       <button class="sort" data-sort="event_description">Sort by name</button>
       <button class="sort" data-sort="event_timestamp">Sort by date</button>
     </div>
   </div>
   <div class="properties_container">
-      <a href="javascript:void(0)" class="closebtn" onclick="closeProperties()"><svg id="ember6175" class="ember-view zd-svg-icon-14 unpin" viewBox="0 0 12 12"><path fill="none" stroke="#000000" stroke-linecap="round" stroke-width="2" d="M7.5 9L4.9 6.4c-.2-.2-.2-.5 0-.7L7.5 3"></path></svg></a>
+    <a href="javascript:void(0)" class="closebtn" onclick="closeProperties()"><svg id="ember6175" class="ember-view zd-svg-icon-14 unpin" viewBox="0 0 12 12"><path fill="none" stroke="#000000" stroke-linecap="round" stroke-width="2" d="M7.5 9L4.9 6.4c-.2-.2-.2-.5 0-.7L7.5 3"></path></svg></a>
   </div>
 
   <!-- https://github.com/zendesk/zendesk_app_framework_sdk -->
@@ -219,137 +230,219 @@
     // https://developer.zendesk.com/apps/docs/apps-v2
     var client = ZAFClient.init();
     client.invoke('resize', { width: '100%', height: '400px' });
-    
+
+    let appLocation, event_default_description, keywords;
+
+    client.on('app.registered', function(appData) {
+      appLocation = appData.context.location;
+      init();
+    });
+    function init() {
     //Get app's settings
     client.metadata().then(function(metadata) {
-      var event_default_description = metadata.settings.event_default_description;
+      event_default_description = metadata.settings.event_default_description;
+      if (metadata.settings.keywords) {
+        keywords = parseKeywords(metadata.settings.keywords);
+        showKeywords(keywords);
+      } 
+      let user_id;
 
-      //Get user ID and events
-      client.get('user').then(function(data) {
-        var user_id = data.user.id;
-        
-        //Get current user events
-        var settings = {
-              "async": true,
-              "crossDomain": true,
-              "url": "/api/sunshine/events?identifier=support:user_id:" + user_id,
-              "method": "GET",
-              "headers": {
-                "content-type": "application/json"
-              },
-              "processData": false,
-              "data": "{}"
-            };
-        client.request(settings).then(function(response){
-          //Loop through each event and create list (see function below)
-          createList(response);
+      //Get user ID and events based on location
+      if (appLocation === 'user_sidebar') {
+        client.get('user').then(function(data) {
+          user_id = data.user.id;
+          getUserEvents(user_id);
 
-          //Wait for list of events to be added to the DOM before initializing list.js and showing event properties
-          $.when(createList).done(function(){
-            initiateList();
-            showProperties(response);
-          });
-        }).catch(function(error){
-          showError(error);
         });
-      });
-
-      //FUNCTION - Create events list
-      function createList(response) {
-        var event = response.data;
-        var events = '';
-
-        //Loop through events to get description and properties
-        for (var i = 0; i <event.length;i++){
-          var event_description = event[i].description;
-          var event_type = event[i].type;
-          var event_source = event[i].source;
-          var event_date = event[i].created_at;
-          var event_date_formated = new Date(Date.parse(event_date)).toUTCString();
-          
-          //Show default description if event doesn't have a description 
-          if(event_description == '') {
-            events += '<li class="event" id="' + i + '"><h2 class="event_description">' + event_default_description + '</h2><p class="event_date">' + event_date_formated + '</p><p class="event_timestamp" style="display: none;">' + event_date + '</p><p class="event_type" style="display: none;">' + event_type + '</p><p class="event_source" style="display: none;">' + event_source + '</p></li>'
-          }
-          else {
-            events += '<li class="event" id="' + i + '"><h2 class="event_description">' + event_description + '</h2><p class="event_date">' + event_date_formated + '</p><p class="event_timestamp" style="display: none;">' + event_date + '</p><p class="event_type" style="display: none;">' + event_type + '</p><p class="event_source" style="display: none;">' + event_source + '</p></li>'
-          }
-        };
-
-        //Append list of events
-        $('#events_container').append('<ul class="list">' + events + '</ul>');
-      };
-
-      //FUNCTION - Initiate events list with list.js
-      function initiateList() {
-
-        //Define search and sorting parameters
-        var options = {
-          valueNames: [ 'event_description', 'event_timestamp', 'event_source', 'event_type' ]
-        };
-
-        //Create list
-        var hackerList = new List('events_container', options);
-      };
-
-      //FUNCTION - Retrieve selected event's properties and add to properties container and display it
-      function showProperties(response){
-        $('.event').click(function(){
-
-          //Get selected event place in the array of events
-          var i = $(this).attr("id");
-          var event = response.data;
-          var event_description = event[i].description;
-          var event_type = event[i].type;
-          var event_source = event[i].source;
-          var event_date = event[i].created_at;
-          var event_date_formated = new Date(Date.parse(event_date)).toUTCString();
-          var event_properties = '';
-
-          //Loop through event properties
-          for(var key in response.data[i].properties) {
-              event_properties += '<li class="event_property"><span class="label">' + key + ':</span>' + response.data[i].properties[key] + '</li>'
-          };
-
-          //Check if event properties already exist in the properties container and remove
-          if ($('.selected_event').length){
-            $('.selected_event').remove();
-          };
-
-          //Check if event has description and Add properties in the properties container
-          if (event_description == ""){
-            $('.properties_container').append('<div class="selected_event"><h2 class="event_description">' + event_default_description + '</h2><p class="event_date">' + event_date_formated + '</p><p class="event_type">' + event_type + '</p><p class="event_source">' + event_source + '</p><ul class="properties_list">' + event_properties + '</ul></div>');
-          } 
-          else {
-          $('.properties_container').append('<div class="selected_event"><h2 class="event_description">' + event_description + '</h2><p class="event_date">' + event_date_formated + '</p><p class="event_type">' + event_type + '</p><p class="event_source">' + event_source + '</p><ul class="properties_list">' + event_properties + '</ul></div>');
-          }
-          //Show properties container and push events container left
-          $('.properties_container').css("width", "100%");
-          $('#events_container').css("right", "100%");
+      } else if (appLocation === "ticket_sidebar") {
+        client.get('ticket.requester').then(userData => {
+          user_id = userData['ticket.requester']['id'];
+          getUserEvents(user_id);
         });
-      };
-    });
-
-    //FUNCTION - Hide properties container
-    function closeProperties() {
-      $('.properties_container').css("width", "0%");
-      $('#events_container').css("right", "0");
-    };
-
-    //FUNCTION - Catch and display errors
-    function showError(error){
-      var error_status = error.status;
-      if (error_status == '404'){
-        $('#events_container').append('<div class="c-callout c-callout--error">Error ' + error_status + ': events not found</div>');
-      } else if (error_status == '400'){
-        $('#events_container').append('<div class="c-callout c-callout--error">Error ' + error_status + ': bad request</div>');
-      } else if (error_status == '403'){
-        $('#events_container').append('<div class="c-callout c-callout--error">Error ' + error_status + ': the feature is not enabled on your account yet</div>');
-      } else {
-        $('#events_container').append('<div class="c-callout c-callout--error">Error ' + error_status + ': unknown error</div>');
       }
-      console.log(error);
+    });
+  }
+
+  function getUserEvents(user_id) {
+    var settings = {
+      "async": true,
+      "crossDomain": true,
+      "url": "/api/cdp/events?user_id=" + user_id,
+      "method": "GET",
+      "headers": {
+        "content-type": "application/json"
+      },
+      "processData": false,
+      "data": "{}"
     };
+
+    client.request(settings).then(function(response){
+      //Loop through each event and create list (see function below)
+      let events;
+
+      if (keywords) {
+        events = filterEventsByKeywords(response.data, keywords);
+      } else {
+        events = response.data;
+      }
+      createList(events);
+
+      //Wait for list of events to be added to the DOM before initializing list.js and showing event properties
+      $.when(createList).done(function(){
+        initiateList();
+        showProperties(events);
+      });
+    }).catch(function(error){
+      showError(error);
+    });
+  }
+
+  //FUNCTION - Create events list
+  function createList(list) {
+    var event = list;
+    var events = '';
+    //Loop through events to get description and properties
+    for (var i = 0; i <event.length;i++){
+      var event_description = event[i].description;
+      var event_type = event[i].type;
+      var event_source = event[i].source;
+      var event_date = event[i].created_at;
+      var event_date_formated = new Date(Date.parse(event_date)).toUTCString();
+      
+      //Show default description if event doesn't have a description 
+      if(event_description == '') {
+        events += '<li class="event" id="' + i + '"><h2 class="event_description">' + event_default_description + '</h2><p class="event_date">' + event_date_formated + '</p><p class="event_timestamp" style="display: none;">' + event_date + '</p><p class="event_type" style="display: none;">' + event_type + '</p><p class="event_source" style="display: none;">' + event_source + '</p></li>'
+      }
+      else {
+        events += '<li class="event" id="' + i + '"><h2 class="event_description">' + event_description + '</h2><p class="event_date">' + event_date_formated + '</p><p class="event_timestamp" style="display: none;">' + event_date + '</p><p class="event_type" style="display: none;">' + event_type + '</p><p class="event_source" style="display: none;">' + event_source + '</p></li>'
+      }
+    };
+
+    //Append list of events
+    $('#events_container').append('<ul class="list">' + events + '</ul>');
+  };
+
+  //FUNCTION - Initiate events list with list.js
+  function initiateList() {
+
+    //Define search and sorting parameters
+    var options = {
+      valueNames: [ 'event_description', 'event_timestamp', 'event_source', 'event_type' ]
+    };
+
+    //Create list
+    var hackerList = new List('events_container', options);
+
+  };
+
+  //FUNCTION - Retrieve selected event's properties and add to properties container and display it
+  function showProperties(response){
+    $('.event').click(function(){
+      //Get selected event place in the array of events
+      var i = $(this).attr("id");
+      var event = response;
+      var event_description = event[i].description;
+      var event_type = event[i].type;
+      var event_source = event[i].source;
+      var event_date = event[i].created_at;
+      var event_date_formated = new Date(Date.parse(event_date)).toUTCString();
+      var event_properties = '';
+
+      //Loop through event properties
+      for(var key in event[i].properties) {
+        event_properties += '<li class="event_property"><span class="label">' + key + ':</span>' + event[i].properties[key] + '</li>'
+      };
+
+      //Check if event properties already exist in the properties container and remove
+      if ($('.selected_event').length){
+        $('.selected_event').remove();
+      };
+
+      //Check if event has description and Add properties in the properties container
+      if (event_description == ""){
+        $('.properties_container').append('<div class="selected_event"><h2 class="event_description">' + event_default_description + '</h2><p class="event_date">' + event_date_formated + '</p><p class="event_type">' + event_type + '</p><p class="event_source">' + event_source + '</p><ul class="properties_list">' + event_properties + '</ul></div>');
+      } 
+      else {
+        $('.properties_container').append('<div class="selected_event"><h2 class="event_description">' + event_description + '</h2><p class="event_date">' + event_date_formated + '</p><p class="event_type">' + event_type + '</p><p class="event_source">' + event_source + '</p><ul class="properties_list">' + event_properties + '</ul></div>');
+      }
+      //Show properties container and push events container left
+      $('.properties_container').css("width", "100%");
+      $('#events_container').css("right", "100%");
+    });
+  };
+
+  function filterEventsByKeywords(events, keywords) {
+    var filterdEvents = [];
+    // ID hash to prevent duplicates (clunky but effective)
+
+    var eventIDs = {};                           
+
+    events.forEach( event => {
+      keywords.forEach( keyword => {
+        for (var key in event) {
+          var eventID = event.id;
+          // If this Event ID has not already been added
+          if ( !eventIDs[eventID] ){   
+            // Nested object within Event         
+            if (key === "properties") {         
+              var properties = event["properties"];
+              for (var propKey in properties) {
+                // Must convert Integers to strings for comparison
+                if ( properties[propKey].toString().includes(keyword) )  { 
+                  filterdEvents.push(event);
+                  var matchID = event["id"];
+                  eventIDs[matchID] = true;
+                }
+              }
+            } else if ( event[key].toString().includes(keyword) )  {
+              filterdEvents.push(event);
+              var matchID = event["id"];
+              eventIDs[matchID] = true;
+            }
+          }
+        }
+      })
+    });
+    console.log(filterdEvents)
+    return filterdEvents;
+  }
+
+
+  //FUNCTION - Hide properties container
+  function closeProperties() {
+    $('.properties_container').css("width", "0%");
+    $('#events_container').css("right", "0");
+  };
+
+  function parseKeywords(keywords) {
+    return keywords.split(',');
+  };
+
+  function showKeywords(keywords) {
+    if (keywords.length > 0) {
+
+      var html = 'Keywords: '
+      keywords.forEach( word => {
+        html += '<span class="keyword-tag">' + word + '</span> '
+      })
+      $('.keyword-container').html(html);
+    }
+  }
+
+  //FUNCTION - Catch and display errors
+  function showError(error){
+    var error_status = error.status;
+    if (error_status == '404'){
+      $('#events_container').append('<div class="c-callout c-callout--error">Error ' + error_status + ': events not found</div>');
+    } else if (error_status == '400'){
+      $('#events_container').append('<div class="c-callout c-callout--error">Error ' + error_status + ': bad request</div>');
+    } else if (error_status == '403'){
+      $('#events_container').append('<div class="c-callout c-callout--error">Error ' + error_status + ': the feature is not enabled on your account yet</div>');
+    } else {
+      $('#events_container').append('<div class="c-callout c-callout--error">Error ' + error_status + ': unknown error</div>');
+    }
+    console.log(error);
+  };
 
   </script>
 </body>
