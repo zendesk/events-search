@@ -1,5 +1,5 @@
 {
-  "name": "Sunshine Events Viewer",
+  "name": "Events Viewer App",
   "author": {
     "name": "Romain Rothier",
     "email": "rrothier@zendesk.com",
@@ -15,16 +15,12 @@
   },
   "parameters": [
     {
-      "label": "Default event description",
-      "helpText": "Will be used if event doesn't have a decription",
       "name": "event_default_description",
       "required": true,
       "secure": false,
       "default": "System event"
     },
     {
-      "label": "Event Keywords",
-      "helpText": "Enter comma-separated keywords to ",
       "name": "keywords",
       "secure": false
     }

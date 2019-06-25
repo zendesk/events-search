@@ -1,8 +1,12 @@
 {
   "app": {
-    "name": "Zen Tunes",
-    "short_description": "Play the famous zen tunes in your help desk.",
-    "long_description": "Play the famous zen tunes in your help desk and \n listen to the beats it has to offer.",
-    "installation_instructions": "Simply click install."
+    "name": "Events Viewer App",
+    "short_description": "View, filter & search user's Sunshine Events.",
+    "long_description": "The Events Viewer App is a Zendesk App that allows agents to view all custom user events related to a user in a timeline. The app can be set to filter events by keywords, and lets agents search through or sort events, and view the attribute of a specific event next on the user's profile or on the ticket.",
+    "installation_instructions": "Simply click install.",
+    "parameters": {
+      "event_default_description": {"label": "Default event description", "helpText": "Will be used if event doesn't have a decription"},
+      "keywords": {"label": "Event Keywords","helpText": "Enter comma-separated keywords to show only events related to those keywords"}
+    }
   }
 }
