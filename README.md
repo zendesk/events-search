@@ -7,7 +7,7 @@ The Events Viewer App is a Zendesk App that allows agents to view all Sunshine u
 
 <p align="center">
     <img src="https://cl.ly/e39dfbb6661a/Screen%252520Recording%2525202019-06-26%252520at%25252009.58%252520am.gif" width="600px">
-    <img src="https://cl.ly/96e1d10c305b/download/Screen%252520Recording%2525202019-06-26%252520at%25252009.59%252520am.gif" width="200px">
+    <img src="https://cl.ly/96e1d10c305b/download/Screen%252520Recording%2525202019-06-26%252520at%25252009.59%252520am.gif" width="250px">
 </p>
 
 ## App location
