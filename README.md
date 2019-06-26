@@ -1,13 +1,20 @@
-# Events Search App
+<img src="./assets/logo.png" align="right" title="CTI app logo" alt="App Logo" width="70px" height="70px">
 
-The Events Search App is a Zendesk App that allows agents to view all custom user events related to a user in a timeline. The app lets agents search through or sort events, and view the attribute of a specific event next on the user's profile.
+# Events Viewer App
 
-## Screenshot(s):
-![](https://cl.ly/132acf8e2cab/Screen%20Recording%202019-01-03%20at%2002.58%20pm.gif)
+The Events Viewer App is a Zendesk App that allows agents to view all Sunshine user events related to a user in a timeline. The app can be set to filter events by keywords, and lets agents search through or sort events, and view the attributes of a specific event on the ticket or the user's profile.
+
+
+<p align="center">
+    <img src="https://cl.ly/e39dfbb6661a/Screen%252520Recording%2525202019-06-26%252520at%25252009.58%252520am.gif" width="600px">
+    <img src="https://cl.ly/96e1d10c305b/download/Screen%252520Recording%2525202019-06-26%252520at%25252009.59%252520am.gif" width="200px">
+</p>
 
 ## App location
 
 * User sidebar
+* Ticket sidebar
+* New ticket sidebar
 
 ## Features
 
