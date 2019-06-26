@@ -1,4 +1,4 @@
-<img src="./assets/logo.png" align="right" title="CTI app logo" alt="App Logo" width="70px" height="70px">
+<img src="./assets/logo.png" align="right" title="CTI app logo" alt="App Logo" width="80px" height="80px" align="left">
 
 # Events Viewer App
 
